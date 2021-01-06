@@ -14,76 +14,151 @@ describe('TodoMVC API', () => {
     cy.request('POST', '/reset')
   })
 
-  it('adds a todo', () => {
-    cy.request('/todos').its('body').should('have.length', 0)
-    cy.request('POST', '/', {
-      what: 'new todo',
-    })
-    cy.request('/todos')
-      .its('body')
-      .should('have.length', 1)
-      .its('0')
-      .should('include', {
+  context('add', () => {
+    it('adds a todo', () => {
+      cy.request('/todos').its('body').should('have.length', 0)
+      cy.request('POST', '/', {
         what: 'new todo',
+      })
+      cy.request('/todos')
+        .its('body')
+        .should('have.length', 1)
+        .its('0')
+        .should('include', {
+          what: 'new todo',
+          done: false,
+        })
+        .and('have.property', 'id')
+        // our uuid is lowercase
+        .should(
+          'match',
+          /^[0-9a-f]{8}\b-[0-9a-f]{4}\b-[0-9a-f]{4}\b-[0-9a-f]{4}\b-[0-9a-f]{12}$/,
+        )
+
+      cy.log('**render HTML**')
+      cy.request('/').its('body').then(writeHtml)
+
+      // now that the server response is in the test runner
+      // let's query it like a normal site
+      cy.get('.todo-list li')
+        .should('have.length', 1)
+        .first()
+        .find('label')
+        .should('have.text', 'new todo')
+    })
+
+    it('does not add a todo without "what" property', () => {
+      cy.request('/todos').its('body').should('have.length', 0)
+      cy.request('POST', '/', {
         done: false,
       })
-      .and('have.property', 'id')
-      // our uuid is lowercase
-      .should(
-        'match',
-        /^[0-9a-f]{8}\b-[0-9a-f]{4}\b-[0-9a-f]{4}\b-[0-9a-f]{4}\b-[0-9a-f]{12}$/,
-      )
-
-    cy.log('**render HTML**')
-    cy.request('/').its('body').then(writeHtml)
-
-    // now that the server response is in the test runner
-    // let's query it like a normal site
-    cy.get('.todo-list li')
-      .should('have.length', 1)
-      .first()
-      .find('label')
-      .should('have.text', 'new todo')
+      cy.request('/todos').its('body').should('have.length', 0)
+      cy.request('POST', '/', {
+        what: 'has text',
+        done: false,
+      })
+      cy.request('/todos').its('body').should('have.length', 1)
+    })
   })
 
-  it('deletes todo', () => {
-    cy.request('POST', '/', {
-      what: 'new todo',
-    })
-    cy.request('/todos')
-      .its('body')
-      .should('have.length', 1)
-      .its('0.id')
-      .then((id) => {
-        cy.request('DELETE', '/', { id })
+  context('delete', () => {
+    it('deletes todo', () => {
+      cy.request('POST', '/', {
+        what: 'new todo',
       })
+      cy.request('/todos')
+        .its('body')
+        .should('have.length', 1)
+        .its('0.id')
+        .then((id) => {
+          cy.request('DELETE', '/', { id })
+        })
 
-    // after deleting the todo, we should get back to zero todos
-    cy.request('/todos').its('body').should('have.length', 0)
+      // after deleting the todo, we should get back to zero todos
+      cy.request('/todos').its('body').should('have.length', 0)
+    })
+
+    it('handles non-existent ID', () => {
+      cy.request('POST', '/', {
+        what: 'new todo',
+      })
+      cy.request('/todos').its('body').should('have.length', 1)
+      cy.request('DELETE', '/', { id: 'does-not-exist' })
+      cy.request('/todos').its('body').should('have.length', 1)
+    })
+
+    it('handles missing id', () => {
+      cy.request('POST', '/', {
+        what: 'new todo',
+      })
+      cy.request('/todos').its('body').should('have.length', 1)
+      cy.request('DELETE', '/', {})
+      cy.request('/todos').its('body').should('have.length', 1)
+    })
   })
 
-  it('completes todo', () => {
-    cy.request('POST', '/', {
-      what: 'new todo',
-    })
-    cy.request('/todos')
-      .its('body')
-      .should('have.length', 1)
-      .its('0.id')
-      .then((id) => {
-        cy.request('PATCH', '/', { id, done: 'true' })
-
-        // confirm the todo was marked
-        cy.request('/todos')
-          .its('body')
-          .should('deep.equal', [
-            {
-              id,
-              what: 'new todo',
-              done: true,
-            },
-          ])
+  context('complete', () => {
+    it('completes todo', () => {
+      cy.request('POST', '/', {
+        what: 'new todo',
       })
+      cy.request('/todos')
+        .its('body')
+        .should('have.length', 1)
+        .its('0.id')
+        .then((id) => {
+          cy.request('PATCH', '/', { id, done: 'true' })
+
+          // confirm the todo was marked
+          cy.request('/todos')
+            .its('body')
+            .should('deep.equal', [
+              {
+                id,
+                what: 'new todo',
+                done: true,
+              },
+            ])
+        })
+    })
+
+    it('handles missing id', () => {
+      cy.request('POST', '/', {
+        what: 'new todo',
+      })
+      cy.request('/todos').its('body').should('have.length', 1)
+      cy.request('PATCH', '/', { done: 'true' })
+      cy.request('/todos')
+        .its('body')
+        .should('have.length', 1)
+        .its('0.done')
+        .should('be.false')
+    })
+
+    it('completes todo using PATCH in the method field', () => {
+      // instead of HTTP method PATCH, use "_method: PATCH" in the POST API request
+      cy.request('POST', '/', {
+        what: 'new todo',
+      })
+      cy.request('/todos')
+        .its('body')
+        .should('have.length', 1)
+        .its('0.id')
+        .then((id) => {
+          cy.request('POST', '/', { _method: 'PATCH', id, done: 'true' })
+
+          // confirm the todo was marked
+          cy.request('/todos')
+            .its('body')
+            .should('deep.equal', [
+              {
+                id,
+                what: 'new todo',
+                done: true,
+              },
+            ])
+        })
+    })
   })
 
   it('clears completed todo', () => {
