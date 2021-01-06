@@ -33,6 +33,7 @@ describe('TodoMVC API', () => {
           doc.write(html)
         })
       })
+
     // now that the server response is in the test runner
     // let's query it like a normal site
     cy.get('.todo-list li')
