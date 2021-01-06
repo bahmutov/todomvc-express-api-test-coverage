@@ -42,4 +42,20 @@ describe('TodoMVC API', () => {
       .find('label')
       .should('have.text', 'new todo')
   })
+
+  it('deletes todo', () => {
+    cy.request('POST', '/', {
+      what: 'new todo',
+    })
+    cy.request('/todos')
+      .its('body')
+      .should('have.length', 1)
+      .its('0.id')
+      .then((id) => {
+        cy.request('DELETE', '/', { id })
+      })
+
+    // after deleting the todo, we should get back to zero todos
+    cy.request('/todos').its('body').should('have.length', 0)
+  })
 })
