@@ -1,5 +1,14 @@
 /// <reference types="cypress" />
 
+// replaces any current HTML in the document with new html
+const writeHtml = (html) => {
+  cy.document().then((doc) => {
+    doc.open()
+    doc.write(html)
+    doc.close()
+  })
+}
+
 describe('TodoMVC API', () => {
   beforeEach(() => {
     cy.request('POST', '/reset')
@@ -26,13 +35,7 @@ describe('TodoMVC API', () => {
       )
 
     cy.log('**render HTML**')
-    cy.request('/')
-      .its('body')
-      .then((html) => {
-        cy.document().then((doc) => {
-          doc.write(html)
-        })
-      })
+    cy.request('/').its('body').then(writeHtml)
 
     // now that the server response is in the test runner
     // let's query it like a normal site
@@ -127,13 +130,7 @@ describe('TodoMVC API', () => {
       .then((id) => {
         cy.log('**render todo page HTML**')
         const url = `/todo/${id}`
-        cy.request(url)
-          .its('body')
-          .then((html) => {
-            cy.document().then((doc) => {
-              doc.write(html)
-            })
-          })
+        cy.request(url).its('body').then(writeHtml)
         // and confirm a single todo is shown and it is a link to itself
         cy.get('.todo-list li')
           .should('have.length', 1)
