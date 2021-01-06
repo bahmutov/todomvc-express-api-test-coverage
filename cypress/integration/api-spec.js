@@ -58,4 +58,28 @@ describe('TodoMVC API', () => {
     // after deleting the todo, we should get back to zero todos
     cy.request('/todos').its('body').should('have.length', 0)
   })
+
+  it('completes todo', () => {
+    cy.request('POST', '/', {
+      what: 'new todo',
+    })
+    cy.request('/todos')
+      .its('body')
+      .should('have.length', 1)
+      .its('0.id')
+      .then((id) => {
+        cy.request('PATCH', '/', { id, done: 'true' })
+
+        // confirm the todo was marked
+        cy.request('/todos')
+          .its('body')
+          .should('deep.equal', [
+            {
+              id,
+              what: 'new todo',
+              done: true,
+            },
+          ])
+      })
+  })
 })
