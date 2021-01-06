@@ -4,6 +4,21 @@ orbs:
   # import Cypress orb by specifying an exact version x.y.z
   # or the latest version 1.x.x using "@1" syntax
   cypress: cypress-io/cypress@1
+  # https://circleci.com/blog/making-code-coverage-easy-to-see-with-the-codecov-orb/
+  # https://circleci.com/developer/orbs/orb/codecov/codecov
+  codecov: codecov/codecov@1
+
+commands:
+  report-coverage:
+    description: |
+      Store coverage report as an artifact and send it to Codecov service.
+    steps:
+      - store_artifacts:
+          path: coverage
+      - run: npx nyc report --reporter=text || true
+      - codecov/upload:
+          file: coverage/coverage-final.json
+
 workflows:
   build:
     jobs:
@@ -13,4 +28,5 @@ workflows:
           start: npm start
           wait-on: 'http://localhost:3000'
           no-workspace: true
-          # TODO trigger semantic release
+          post-steps:
+            - report-coverage
