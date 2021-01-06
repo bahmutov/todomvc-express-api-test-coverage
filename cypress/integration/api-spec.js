@@ -144,4 +144,27 @@ describe('TodoMVC API', () => {
           .should('have.attr', 'href', url)
       })
   })
+
+  it('has active page', () => {
+    cy.request('POST', '/', {
+      what: 'first todo',
+    })
+    cy.request('POST', '/', {
+      what: 'second todo',
+    })
+    cy.request('/todos')
+      .its('body')
+      .should('have.length', 2)
+      .then((todos) => {
+        cy.request('PATCH', '/', { id: todos[1].id, done: 'true' })
+
+        cy.log('**the first todo is active**')
+        cy.visit('/active')
+        cy.get('.todo-list li')
+          .should('have.length', 1)
+          .first()
+          .find('label')
+          .should('have.text', todos[0].what)
+      })
+  })
 })
