@@ -82,4 +82,36 @@ describe('TodoMVC API', () => {
           ])
       })
   })
+
+  it('clears completed todo', () => {
+    // let's add two todos and mark one of them completed
+    // after clearing the completed todos we can check
+    // that only 1 item remains
+    cy.request('POST', '/', {
+      what: 'first todo',
+    })
+    cy.request('POST', '/', {
+      what: 'second todo',
+    })
+    cy.request('/todos')
+      .its('body')
+      .should('have.length', 2)
+      .then((todos) => {
+        // confirm the order of returned todos
+        // our application returns the last added todo first
+        expect(todos[0], 'first item').to.contain({
+          what: 'second todo',
+          done: false,
+        })
+        expect(todos[1], 'second item').to.contain({
+          what: 'first todo',
+          done: false,
+        })
+
+        cy.request('PATCH', '/', { id: todos[1].id, done: 'true' })
+        cy.request('POST', '/clear-completed')
+        // confirm a single item remains
+        cy.request('/todos').its('body').should('deep.equal', [todos[0]])
+      })
+  })
 })
