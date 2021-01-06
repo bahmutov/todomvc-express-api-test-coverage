@@ -1,0 +1,58 @@
+{
+  "name": "todomvc-express-api-test-coverage",
+  "description": "Example measuring the backend test coverage using Cypress API tests",
+  "version": "1.0.0",
+  "main": "src/app.js",
+  "private": true,
+  "scripts": {
+    "start": "node src/start.js",
+    "cy:open": "cypress open",
+    "cy:run": "cypress run",
+    "dev": "start-test 3000 cy:open"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bahmutov/todomvc-express-api-test-coverage.git"
+  },
+  "keywords": [
+    "todo",
+    "todos",
+    "todomvc",
+    "backend",
+    "example",
+    "express",
+    "node",
+    "expressjs"
+  ],
+  "files": [
+    "src"
+  ],
+  "author": "Gleb Bahmutov <gleb.bahmutov@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/bahmutov/todomvc-express-api-test-coverage/issues"
+  },
+  "homepage": "https://github.com/bahmutov/todomvc-express-api-test-coverage#readme",
+  "dependencies": {
+    "body-parser": "1.18.2",
+    "cache-manager": "2.6.0",
+    "check-more-types": "2.24.0",
+    "express": "5.0.0-alpha.2",
+    "fake-todos": "1.8.0",
+    "fs-extra": "5.0.0",
+    "js-beautify": "1.7.5",
+    "lazy-ass": "1.6.0",
+    "method-override": "2.3.10",
+    "morgan": "1.9.0",
+    "p-min-delay": "2.0.0",
+    "ramda": "0.25.0",
+    "todomvc-model": "1.2.0",
+    "vdom-to-html": "2.3.1",
+    "virtual-dom": "2.1.1"
+  },
+  "devDependencies": {
+    "cypress": "6.2.1",
+    "prettier": "2.2.1",
+    "start-server-and-test": "1.11.7"
+  }
+}
