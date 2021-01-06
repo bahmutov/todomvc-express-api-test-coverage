@@ -134,6 +134,31 @@ describe('TodoMVC API', () => {
         .its('0.done')
         .should('be.false')
     })
+
+    it('completes todo using PATCH in the method field', () => {
+      // instead of HTTP method PATCH, use "_method: PATCH" in the POST API request
+      cy.request('POST', '/', {
+        what: 'new todo',
+      })
+      cy.request('/todos')
+        .its('body')
+        .should('have.length', 1)
+        .its('0.id')
+        .then((id) => {
+          cy.request('POST', '/', { _method: 'PATCH', id, done: 'true' })
+
+          // confirm the todo was marked
+          cy.request('/todos')
+            .its('body')
+            .should('deep.equal', [
+              {
+                id,
+                what: 'new todo',
+                done: true,
+              },
+            ])
+        })
+    })
   })
 
   it('clears completed todo', () => {
