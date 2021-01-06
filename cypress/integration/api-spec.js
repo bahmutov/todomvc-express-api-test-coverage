@@ -114,4 +114,34 @@ describe('TodoMVC API', () => {
         cy.request('/todos').its('body').should('deep.equal', [todos[0]])
       })
   })
+
+  it('has todo page', () => {
+    cy.request('POST', '/', {
+      what: 'new todo',
+    })
+
+    cy.request('/todos')
+      .its('body')
+      .should('have.length', 1)
+      .its('0.id')
+      .then((id) => {
+        cy.log('**render todo page HTML**')
+        const url = `/todo/${id}`
+        cy.request(url)
+          .its('body')
+          .then((html) => {
+            cy.document().then((doc) => {
+              doc.write(html)
+            })
+          })
+        // and confirm a single todo is shown and it is a link to itself
+        cy.get('.todo-list li')
+          .should('have.length', 1)
+          .first()
+          .find('label')
+          .should('have.text', 'new todo')
+          .find('a')
+          .should('have.attr', 'href', url)
+      })
+  })
 })

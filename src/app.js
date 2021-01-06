@@ -124,8 +124,8 @@ if (global.__coverage__) {
 }
 
 app.get('/', broadcast, sendIndexPage)
-app.get('/todo/:id', sendTodoPage)
 app.get('/app.css', sendAppCss)
+app.get('/todo/:id', sendTodoPage)
 app.get('/active', activeTodosPage)
 app.get('/completed', completedTodosPage)
 app.get('/todos', sendTodos)
