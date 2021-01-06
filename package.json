@@ -5,7 +5,7 @@
   "main": "src/app.js",
   "private": true,
   "scripts": {
-    "start": "node src/start.js",
+    "start": "nyc --silent node src/start.js",
     "cy:open": "cypress open",
     "cy:run": "cypress run",
     "dev": "start-test 3000 cy:open"
@@ -51,7 +51,9 @@
     "virtual-dom": "2.1.1"
   },
   "devDependencies": {
+    "@cypress/code-coverage": "3.8.8",
     "cypress": "6.2.1",
+    "nyc": "15.1.0",
     "prettier": "2.2.1",
     "start-server-and-test": "1.11.7"
   }
