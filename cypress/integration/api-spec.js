@@ -161,36 +161,59 @@ describe('TodoMVC API', () => {
     })
   })
 
-  it('clears completed todo', () => {
-    // let's add two todos and mark one of them completed
-    // after clearing the completed todos we can check
-    // that only 1 item remains
-    cy.request('POST', '/', {
-      what: 'first todo',
-    })
-    cy.request('POST', '/', {
-      what: 'second todo',
-    })
-    cy.request('/todos')
-      .its('body')
-      .should('have.length', 2)
-      .then((todos) => {
-        // confirm the order of returned todos
-        // our application returns the last added todo first
-        expect(todos[0], 'first item').to.contain({
-          what: 'second todo',
-          done: false,
-        })
-        expect(todos[1], 'second item').to.contain({
-          what: 'first todo',
-          done: false,
-        })
-
-        cy.request('PATCH', '/', { id: todos[1].id, done: 'true' })
-        cy.request('POST', '/clear-completed')
-        // confirm a single item remains
-        cy.request('/todos').its('body').should('deep.equal', [todos[0]])
+  context('clear completed', () => {
+    it('clears completed todo', () => {
+      // let's add two todos and mark one of them completed
+      // after clearing the completed todos we can check
+      // that only 1 item remains
+      cy.request('POST', '/', {
+        what: 'first todo',
       })
+      cy.request('POST', '/', {
+        what: 'second todo',
+      })
+      cy.request('/todos')
+        .its('body')
+        .should('have.length', 2)
+        .then((todos) => {
+          // confirm the order of returned todos
+          // our application returns the last added todo first
+          expect(todos[0], 'first item').to.contain({
+            what: 'second todo',
+            done: false,
+          })
+          expect(todos[1], 'second item').to.contain({
+            what: 'first todo',
+            done: false,
+          })
+
+          cy.request('PATCH', '/', { id: todos[1].id, done: 'true' })
+          cy.request('POST', '/clear-completed')
+          // confirm a single item remains
+          cy.request('/todos').its('body').should('deep.equal', [todos[0]])
+        })
+    })
+
+    it('clears completed todos by clicking the button', () => {
+      cy.request('POST', '/', {
+        what: 'first todo',
+      })
+      cy.request('POST', '/', {
+        what: 'second todo',
+      })
+      cy.visit('/')
+      cy.get('.todo-list li')
+        .should('have.length', 2)
+        .first()
+        .find('button[name=done]')
+        .click()
+      // after the page reloads 1 item should have class completed
+      cy.get('.todo-list li.completed').should('have.length', 1)
+      cy.contains('button', 'Clear completed').click()
+      cy.get('.todo-list li')
+        .should('have.length', 1)
+        .and('not.have.class', 'completed')
+    })
   })
 
   it('has todo page', () => {
