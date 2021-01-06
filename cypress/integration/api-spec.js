@@ -167,4 +167,28 @@ describe('TodoMVC API', () => {
           .should('have.text', todos[0].what)
       })
   })
+
+  it('has completed page', () => {
+    cy.request('POST', '/', {
+      what: 'first todo',
+    })
+    cy.request('POST', '/', {
+      what: 'second todo',
+    })
+    cy.request('/todos')
+      .its('body')
+      .should('have.length', 2)
+      .then((todos) => {
+        cy.request('PATCH', '/', { id: todos[1].id, done: 'true' })
+
+        cy.log('**the second todo is completed**')
+        cy.visit('/completed')
+        cy.get('.todo-list li')
+          .should('have.length', 1)
+          .first()
+          .should('have.class', 'completed')
+          .find('label')
+          .should('have.text', todos[1].what)
+      })
+  })
 })
